@@ -1,0 +1,10 @@
+minio:
+  Endpoint: 10.13.0.38:9080
+  AccessKeyId: wizhMinio
+  SecretAccessKey: wizhMinio
+  UseSSL: false
+  VideoBucketName: wizh-video
+  CoverBucketName: wizh-cover
+  AvatarBucketName: wizh-avatar
+  BackgroungImageBucketName: wizh-background
+  ExpireTime: 36000   # second

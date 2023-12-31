@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package relation;
+
+option go_package = "relation";
+
+import "user.proto";
+
+// ========================= 关注操作 =========================
+message RelationActionRequest {
+    int64 user_id = 1;      // 当前登录用户 id，登录状态下设置
+    int64 to_user_id = 2;   // 对方用户 id
+    int32 action_type = 3;  // 1-关注，2-取消关注
+}
+
+message RelationActionResponse {
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+}
+// ========================= 关注操作 =========================
+
+// ========================= 关注列表 =========================
+message RelationFollowListRequest {
+    int64 user_id = 1;      // 当前登录用户 id，登录状态下设置
+    int64 to_user_id = 2;   // 对方用户 id
+}
+
+message RelationFollowListResponse {
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+    repeated user.User user_list = 3;   // 用户信息列表
+}
+// ========================= 关注列表 =========================
+
+// ========================= 粉丝列表 =========================
+message RelationFollowerListRequest {
+    int64 user_id = 1;      // 当前登录用户 id，登录状态下设置
+    int64 to_user_id = 2;   // 对方用户 id
+}
+
+message RelationFollowerListResponse {
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+    repeated user.User user_list = 3;   // 用户信息列表
+}
+// ========================= 粉丝列表 =========================
+
+service RelationService {
+    rpc RelationAction (RelationActionRequest) returns (RelationActionResponse);
+    rpc RelationFollowList (RelationFollowListRequest) returns (RelationFollowListResponse);
+    rpc RelationFollowerList (RelationFollowerListRequest) returns (RelationFollowerListResponse);
+}

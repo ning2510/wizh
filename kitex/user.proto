@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "user";
+
+// ========================= 用户注册 =========================
+message UserRegisterRequest {
+    string username = 1;    // 注册用户名，最长 32 个字符
+    string password = 2;    // 密码，最长 32 个字符
+}
+
+message UserRegisterResponse {
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+    int64 user_id = 3;      // 用户 id
+    string token = 4;       // 用户鉴权 token
+}
+// ========================= 用户注册 =========================
+
+// ========================= 用户登录 =========================
+message UserLoginRequest {
+    string username = 1;    // 用户名，最长 32 个字符
+    string password = 2;    // 密码，最长 32 个字符
+}
+
+message UserLoginResponse {
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+    int64 user_id = 3;      // 用户 id
+    string token = 4;       // 用户鉴权 token
+}
+// ========================= 用户登录 =========================
+
+// ========================= 用户信息 =========================
+message User {
+    int64 id = 1;                   // 用户 id
+    string name = 2;                // 用户名称
+    int64 follow_count = 3;         // 关注总数
+    int64 follower_count = 4;       // 粉丝总数
+    bool is_follow = 5;             // true-已关注，false-未关注
+    string avatar = 6;              // 用户头像
+    string background_image = 7;    // 用户个人页顶部大图
+    string signature = 8;           // 个人简介
+    int64 total_favorited = 9;       // 获赞数量
+    int64 work_count = 10;          // 作品数
+    int64 favorite_count = 11;      // 喜欢数
+}
+
+message UserInfoRequest {
+    int64 user_id = 1;      // 当前登录用户 id，登录状态下设置
+    int64 to_user_id = 2;   // 目标用户 id
+}
+
+message UserInfoResponse {
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+    User user = 3;          // 用户信息
+}
+// ========================= 用户信息 =========================
+
+service UserService {
+    rpc Register (UserRegisterRequest) returns (UserRegisterResponse);
+    rpc Login (UserLoginRequest) returns (UserLoginResponse);
+    rpc UserInfo (UserInfoRequest) returns (UserInfoResponse);
+}

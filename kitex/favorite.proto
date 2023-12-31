@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package favorite;
+
+option go_package = "favorite";
+
+import "video.proto";
+
+// ========================= 点赞操作 =========================
+message FavoriteActionRequest {
+    int64 user_id = 1;      // 当前登录用户 id，登录状态下设置
+    int64 video_id = 2;     // 视频 id
+    int32 action_type = 3;  // 1-点赞，2-取消点赞
+}
+
+message FavoriteActionResponse {
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+}
+// ========================= 点赞操作 =========================
+
+// ========================= 喜欢列表 =========================
+message FavoriteListRequest {
+    int64 user_id = 1;      // 当前登录用户 id
+    int64 to_user_id = 2;   // 被查找喜欢列表的用户 id
+}
+
+message FavoriteListResponse {
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+    repeated video.Video video_list = 3;    // 用户点赞视频列表
+}
+// ========================= 喜欢列表 =========================
+
+service FavoriteService {
+    rpc FavoriteAction (FavoriteActionRequest) returns (FavoriteActionResponse);
+    rpc FavoriteList (FavoriteListRequest) returns (FavoriteListResponse);
+}

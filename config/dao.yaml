@@ -1,0 +1,13 @@
+mysql:
+  host: 10.13.0.38
+  port: 3306
+  username: root
+  password: root1234
+  database: wizh
+
+redis:
+  host: 10.13.0.38
+  port: 6379
+  password: wizhRedis
+  db: 0
+  expireTime: 6   # second

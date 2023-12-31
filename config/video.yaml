@@ -1,0 +1,12 @@
+server:
+   name: "WizhVideoServer"
+   host: 0.0.0.0
+   port: 6006
+
+etcd:
+   host: 10.13.0.38
+   port: 2379
+
+video:
+   countlimit: 10
+   maxSizeLimit: 50  # MB

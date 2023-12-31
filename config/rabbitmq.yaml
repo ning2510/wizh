@@ -1,0 +1,18 @@
+server:
+  name: wizhRabbitMQ
+  host: 10.13.0.38
+  port: 5672
+  username: wizhRMQ
+  password: wizhRMQ
+  vhost: wizhRMQ
+  prefetchCount: 1000
+
+consumer:
+  favorite:
+    autoAck: true
+    prefetchCount: 1000
+  
+  relation:
+    autoAck: true
+    prefetchCount: 1000
+    
