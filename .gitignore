@@ -1,0 +1,5 @@
+/.vscode
+
+/**/logs
+
+/dockerfiles/minio/data
