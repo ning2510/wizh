@@ -13,12 +13,13 @@ import (
 )
 
 var (
-	config        = viper.InitConf("dao")
-	redisOnce     sync.Once
-	redisHelper   *RedisHelper
-	FavoriteMutex *redsync.Mutex
-	RelationMutex *redsync.Mutex
-	ExpireTime    = time.Duration(config.Viper.GetInt64("redis.expireTime") * int64(time.Second))
+	config               = viper.InitConf("dao")
+	redisOnce            sync.Once
+	redisHelper          *RedisHelper
+	FavoriteVideoMutex   *redsync.Mutex
+	FavoriteCommentMutex *redsync.Mutex
+	RelationMutex        *redsync.Mutex
+	ExpireTime           = time.Duration(config.Viper.GetInt64("redis.expireTime") * int64(time.Second))
 )
 
 type RedisHelper struct {
@@ -71,12 +72,14 @@ func init() {
 	}
 
 	// 开启定时同步 redis 到 mysql
-	GoCronFavorite()
+	GoCronFavoriteVideo()
+	GoCronFavoriteComment()
 	GoCronRelation()
 
 	// 创建 redis 连接池
 	pool := goredis.NewPool(rdb)
 	rs := redsync.New(pool)
-	FavoriteMutex = rs.NewMutex("favorite")
+	FavoriteVideoMutex = rs.NewMutex("favoriteVideo")
+	FavoriteCommentMutex = rs.NewMutex("favoriteComment")
 	RelationMutex = rs.NewMutex("relation")
 }

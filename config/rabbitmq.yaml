@@ -15,4 +15,8 @@ consumer:
   relation:
     autoAck: true
     prefetchCount: 1000
+
+  comment:
+    autoAck: true
+    prefetchCount: 1000
     

@@ -32,8 +32,18 @@ func InitRouter(r *gin.Engine) {
 
 		favorite := router.Group("/favorite")
 		{
-			favorite.POST("/action", auth.Auth(), handler.FavoriteAction)
-			favorite.GET("/list", auth.AuthWithoutLogin(), handler.FavoriteList)
+			// 视频点赞操作
+			video := favorite.Group("/video")
+			{
+				video.POST("/action", auth.Auth(), handler.FavoriteVideoAction)
+				video.GET("/list", auth.AuthWithoutLogin(), handler.FavoriteVideoList)
+			}
+
+			// 评论点赞操作
+			comment := favorite.Group("/comment")
+			{
+				comment.POST("/action", auth.Auth(), handler.FavoriteCommentAction)
+			}
 		}
 
 		comment := router.Group("/comment")

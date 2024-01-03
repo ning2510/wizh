@@ -85,6 +85,7 @@ func (s *CommentServiceImpl) CommentList(ctx context.Context, req *comment.Comme
 			}, nil
 		}
 
+		favoriteRelation, _ := db.GetFavoriteCommentRelationByUserCommentId(ctx, req.UserId, int64(c.ID))
 		followRelation, _ := db.GetRelationByUserIds(ctx, req.UserId, int64(usr.ID))
 		avatar, err := minio.GetFileTemporaryURL(minio.AvatarBucketName, usr.Avatar)
 		if err != nil {
@@ -117,8 +118,10 @@ func (s *CommentServiceImpl) CommentList(ctx context.Context, req *comment.Comme
 				WorkCount:       int64(usr.WorkCount),
 				FavoriteCount:   int64(usr.FavoriteCount),
 			},
-			Content:    c.Content,
-			CreateDate: c.CreatedAt.Format("2006-01-02"),
+			Content:       c.Content,
+			CreateTime:    c.CreatedAt.UnixMilli(),
+			IsFavorite:    favoriteRelation != nil,
+			FavoriteCount: int64(c.LikeCount),
 		})
 	}
 

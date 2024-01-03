@@ -11,8 +11,9 @@ import (
 
 // Client is designed to provide IDL-compatible methods with call-option parameter for kitex framework.
 type Client interface {
-	FavoriteAction(ctx context.Context, Req *favorite.FavoriteActionRequest, callOptions ...callopt.Option) (r *favorite.FavoriteActionResponse, err error)
-	FavoriteList(ctx context.Context, Req *favorite.FavoriteListRequest, callOptions ...callopt.Option) (r *favorite.FavoriteListResponse, err error)
+	FavoriteVideoAction(ctx context.Context, Req *favorite.FavoriteVideoActionRequest, callOptions ...callopt.Option) (r *favorite.FavoriteVideoActionResponse, err error)
+	FavoriteVideoList(ctx context.Context, Req *favorite.FavoriteVideoListRequest, callOptions ...callopt.Option) (r *favorite.FavoriteVideoListResponse, err error)
+	FavoriteCommentAction(ctx context.Context, Req *favorite.FavoriteCommentActionRequest, callOptions ...callopt.Option) (r *favorite.FavoriteCommentActionResponse, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -44,12 +45,17 @@ type kFavoriteServiceClient struct {
 	*kClient
 }
 
-func (p *kFavoriteServiceClient) FavoriteAction(ctx context.Context, Req *favorite.FavoriteActionRequest, callOptions ...callopt.Option) (r *favorite.FavoriteActionResponse, err error) {
+func (p *kFavoriteServiceClient) FavoriteVideoAction(ctx context.Context, Req *favorite.FavoriteVideoActionRequest, callOptions ...callopt.Option) (r *favorite.FavoriteVideoActionResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.FavoriteAction(ctx, Req)
+	return p.kClient.FavoriteVideoAction(ctx, Req)
 }
 
-func (p *kFavoriteServiceClient) FavoriteList(ctx context.Context, Req *favorite.FavoriteListRequest, callOptions ...callopt.Option) (r *favorite.FavoriteListResponse, err error) {
+func (p *kFavoriteServiceClient) FavoriteVideoList(ctx context.Context, Req *favorite.FavoriteVideoListRequest, callOptions ...callopt.Option) (r *favorite.FavoriteVideoListResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.FavoriteList(ctx, Req)
+	return p.kClient.FavoriteVideoList(ctx, Req)
+}
+
+func (p *kFavoriteServiceClient) FavoriteCommentAction(ctx context.Context, Req *favorite.FavoriteCommentActionRequest, callOptions ...callopt.Option) (r *favorite.FavoriteCommentActionResponse, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.FavoriteCommentAction(ctx, Req)
 }

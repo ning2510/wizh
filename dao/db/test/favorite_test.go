@@ -15,12 +15,12 @@ func TestCreateVideoFavorite(t *testing.T) {
 	fmt.Println("CreateVideoFavorite success!")
 }
 
-func TestDeleteFavoriteByUserVideoId(t *testing.T) {
-	if err := db.DeleteFavoriteByUserVideoId(context.Background(), 3, 2, 3); err != nil {
+func TestDeleteFavoriteVideoByUserVideoId(t *testing.T) {
+	if err := db.DeleteFavoriteVideoByUserVideoId(context.Background(), 3, 2, 3); err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("DeleteFavoriteByUserVideoId success!")
+	fmt.Println("DeleteFavoriteVideoByUserVideoId success!")
 }
 
 func TestGetFavoriteVideoRelationByUserVideoId(t *testing.T) {

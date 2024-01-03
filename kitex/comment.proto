@@ -11,7 +11,9 @@ message Comment {
     int64 id = 1;               // 评论 id
     user.User user = 2;         // 评论用户信息
     string content = 3;         // 评论内容
-    string create_date = 4;     // 评论发布日期，格式 mm-dd
+    int64 create_time = 4;      // 评论发布时间
+    bool is_favorite = 5;       // 是否点赞
+    int64 favorite_count = 6;   // 点赞数
 }
 
 message CommentActionRequest {
@@ -25,7 +27,6 @@ message CommentActionRequest {
 message CommentActionResponse {
     int32 status_code = 1;      // 状态码，0-成功，其他值-失败
     string status_msg = 2;      // 返回状态描述
-    Comment comment = 3;        // 评论成功返回评论内容，不需要重新拉取整个列表
 }
 // ========================= 评论操作 =========================
 

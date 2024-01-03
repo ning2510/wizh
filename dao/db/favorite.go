@@ -18,7 +18,7 @@ type FavoriteCommentRelation struct {
 	Comment   Comment `gorm:"foreignkey:CommentID" json:"comment,omitempty"`
 	CommentID uint    `gorm:"index:idx_comment_id;not null" json:"comment_id,omitempty"`
 	User      User    `gorm:"foreignkey:UserID" json:"user,omitempty"`
-	UserID    User    `gorm:"index:idx_user_id;not null" json:"user_id,omitempty"`
+	UserID    uint    `gorm:"index:idx_user_id;not null" json:"user_id,omitempty"`
 }
 
 func (FavoriteVideoRelation) TableName() string {
@@ -29,7 +29,7 @@ func (FavoriteCommentRelation) TableName() string {
 	return "user_favorite_comments"
 }
 
-// 创建一条用户点赞数据
+// 创建一条用户点赞视频数据
 func CreateVideoFavorite(ctx context.Context, userId int64, videoId int64, authorId int64) error {
 	err := DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// 1. user_favorite_videos 表新增数据
@@ -76,7 +76,7 @@ func CreateVideoFavorite(ctx context.Context, userId int64, videoId int64, autho
 }
 
 // 删除用户对视频的点赞，并将视频的点赞数 -1
-func DeleteFavoriteByUserVideoId(ctx context.Context, userId int64, videoId int64, authorId int64) error {
+func DeleteFavoriteVideoByUserVideoId(ctx context.Context, userId int64, videoId int64, authorId int64) error {
 	err := DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// 1. user_favorite_videos 表中删除数据
 		if err := tx.Unscoped().Where("user_id = ? AND video_id = ?", userId, videoId).Delete(&FavoriteVideoRelation{}).Error; err != nil {
@@ -154,18 +154,6 @@ func GetAllFavoriteList(ctx context.Context) ([]*FavoriteVideoRelation, error) {
 	}
 }
 
-// 根据 userId 和 commentId 获取评论的点赞关系
-func GetFavoriteCommentRelationByUserCommentId(ctx context.Context, userId int64, commentId int64) (*FavoriteCommentRelation, error) {
-	favoriteCommentRelation := new(FavoriteCommentRelation)
-	if err := DB.WithContext(ctx).Where("user_id = ? AND comment_id = ?", userId, commentId).First(&favoriteCommentRelation).Error; err == nil {
-		return favoriteCommentRelation, nil
-	} else if err == gorm.ErrRecordNotFound {
-		return nil, nil
-	} else {
-		return nil, err
-	}
-}
-
 // 获取 videoId 对应的点赞用户 id 列表
 func GetFavoriteUserIdsByVideoId(ctx context.Context, videoId int64) ([]*int64, error) {
 	userIds := make([]*int64, 0)
@@ -175,5 +163,68 @@ func GetFavoriteUserIdsByVideoId(ctx context.Context, videoId int64) ([]*int64, 
 		return nil, nil
 	} else {
 		return nil, nil
+	}
+}
+
+// ====================================== 评论 ===========================================
+
+// 创建一条用户点赞评论数据
+func CreateCommentFavorite(ctx context.Context, userId int64, commentId int64) error {
+	err := DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// 1. user_favorite_comments 表新增数据
+		if err := tx.Create(&FavoriteCommentRelation{
+			CommentID: uint(commentId),
+			UserID:    uint(userId),
+		}).Error; err != nil {
+			return err
+		}
+
+		// 2. comments 表 like_count + 1
+		res := tx.Model(&Comment{}).Where("id = ?", commentId).Update("like_count", gorm.Expr("like_count + ?", 1))
+		if res.Error != nil {
+			return res.Error
+		}
+
+		if res.RowsAffected != 1 {
+			return errno.ErrDatabase
+		}
+
+		return nil
+	})
+	return err
+}
+
+// 删除用户对评论的点赞
+func DeleteFavoriteCommentByUserCommentId(ctx context.Context, userId int64, commentId int64) error {
+	err := DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// 1. user_favorite_comments 表删除数据
+		if err := tx.Unscoped().Where("user_id = ? AND comment_id = ?", userId, commentId).Delete(&FavoriteCommentRelation{}).Error; err != nil {
+			return err
+		}
+
+		// 2. comments 表 like_count - 1
+		res := tx.Model(&Comment{}).Where("id = ?", commentId).Update("like_count", gorm.Expr("CASE WHEN like_count >= 1 THEN like_count - 1 ELSE 0 END"))
+		if res.Error != nil {
+			return res.Error
+		}
+
+		if res.RowsAffected != 1 {
+			return errno.ErrDatabase
+		}
+
+		return nil
+	})
+	return err
+}
+
+// 获取用户与评论之间的点赞关系
+func GetFavoriteCommentRelationByUserCommentId(ctx context.Context, userId int64, commentId int64) (*FavoriteCommentRelation, error) {
+	favoriteCommentRelation := new(FavoriteCommentRelation)
+	if err := DB.WithContext(ctx).Where("user_id = ? AND comment_id = ?", userId, commentId).First(&favoriteCommentRelation).Error; err == nil {
+		return favoriteCommentRelation, nil
+	} else if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	} else {
+		return nil, err
 	}
 }

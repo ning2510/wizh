@@ -6,33 +6,47 @@ option go_package = "favorite";
 
 import "video.proto";
 
-// ========================= 点赞操作 =========================
-message FavoriteActionRequest {
+// ========================= 视频点赞操作 =========================
+message FavoriteVideoActionRequest {
     int64 user_id = 1;      // 当前登录用户 id，登录状态下设置
     int64 video_id = 2;     // 视频 id
     int32 action_type = 3;  // 1-点赞，2-取消点赞
 }
 
-message FavoriteActionResponse {
+message FavoriteVideoActionResponse {
     int32 status_code = 1;  // 状态码，0-成功，其他值-失败
     string status_msg = 2;  // 返回状态描述
 }
-// ========================= 点赞操作 =========================
+// ========================= 视频点赞操作 =========================
 
-// ========================= 喜欢列表 =========================
-message FavoriteListRequest {
+// ========================= 视频喜欢列表 =========================
+message FavoriteVideoListRequest {
     int64 user_id = 1;      // 当前登录用户 id
     int64 to_user_id = 2;   // 被查找喜欢列表的用户 id
 }
 
-message FavoriteListResponse {
+message FavoriteVideoListResponse {
     int32 status_code = 1;  // 状态码，0-成功，其他值-失败
     string status_msg = 2;  // 返回状态描述
     repeated video.Video video_list = 3;    // 用户点赞视频列表
 }
-// ========================= 喜欢列表 =========================
+// ========================= 视频喜欢列表 =========================
+
+// ========================= 视频点赞操作 =========================
+message FavoriteCommentActionRequest {
+    int64 user_id = 1;      // 当前登录用户 id，登录状态下设置
+    int64 comment_id = 2;     // 视频 id
+    int32 action_type = 3;  // 1-点赞，2-取消点赞
+}
+
+message FavoriteCommentActionResponse {
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+}
+// ========================= 视频点赞操作 =========================
 
 service FavoriteService {
-    rpc FavoriteAction (FavoriteActionRequest) returns (FavoriteActionResponse);
-    rpc FavoriteList (FavoriteListRequest) returns (FavoriteListResponse);
+    rpc FavoriteVideoAction (FavoriteVideoActionRequest) returns (FavoriteVideoActionResponse);
+    rpc FavoriteVideoList (FavoriteVideoListRequest) returns (FavoriteVideoListResponse);
+    rpc FavoriteCommentAction (FavoriteCommentActionRequest) returns (FavoriteCommentActionResponse);
 }

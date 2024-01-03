@@ -10,18 +10,23 @@ import (
 )
 
 var (
-	config     = viper.InitConf("rabbitmq")
-	autoAck    = config.Viper.GetBool("consumer.favorite.autoAck")
-	FavoriteMQ = rabbitmq.NewRabbitMQSimple("favorite", autoAck)
+	config = viper.InitConf("rabbitmq")
+
+	videoAutoAck    = config.Viper.GetBool("consumer.favorite.autoAck")
+	FavoriteVideoMQ = rabbitmq.NewRabbitMQSimple("favoriteVideo", videoAutoAck)
+
+	commentAutoAck    = config.Viper.GetBool("consumer.comment.autoAck")
+	FavoriteCommentMQ = rabbitmq.NewRabbitMQSimple("favoriteComment", commentAutoAck)
 )
 
 func init() {
-	go consume()
+	go consumeVideo()
+	go consumeComment()
 }
 
-func consume() error {
+func consumeVideo() error {
 	logger := zap.InitLogger()
-	msgs, err := FavoriteMQ.ConsumeSimple()
+	msgs, err := FavoriteVideoMQ.ConsumeSimple()
 	if err != nil {
 		logger.Errorln(err)
 		return err
@@ -29,18 +34,49 @@ func consume() error {
 
 	// 将消息从队列中取出
 	for msg := range msgs {
-		fc := new(redis.FavoriteCache)
+		fc := new(redis.FavoriteVideoCache)
 		if err := json.Unmarshal(msg.Body, fc); err != nil {
 			continue
 		}
-		logger.Infof("FavoriteMQ recieved a message: %v", fc)
+		logger.Infof("FavoriteVideoMQ recieved a message: %v", fc)
 
-		if err := redis.UpdateFavorite(context.Background(), fc); err != nil {
+		if err := redis.UpdateVideoFavorite(context.Background(), fc); err != nil {
 			continue
 		}
-		logger.Infof("UpdateFavorite success: %v", fc)
+		logger.Infof("UpdateVideoFavorite success: %v", fc)
 
-		if !autoAck {
+		if !videoAutoAck {
+			if err := msg.Ack(true); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func consumeComment() error {
+	logger := zap.InitLogger()
+	msgs, err := FavoriteCommentMQ.ConsumeSimple()
+	if err != nil {
+		logger.Errorln(err)
+		return err
+	}
+
+	// 将消息从队列中取出
+	for msg := range msgs {
+		fc := new(redis.FavoriteCommentCache)
+		if err := json.Unmarshal(msg.Body, fc); err != nil {
+			continue
+		}
+		logger.Infof("FavoriteCommentMQ recieved a message: %v", fc)
+
+		if err := redis.UpdateCommentFavorite(context.Background(), fc); err != nil {
+			continue
+		}
+		logger.Infof("UpdateCommentFavorite success: %v", fc)
+
+		if !commentAutoAck {
 			if err := msg.Ack(true); err != nil {
 				return err
 			}

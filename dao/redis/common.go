@@ -57,7 +57,7 @@ func setKey(ctx context.Context, key string, value string, expireTime time.Durat
 	return nil
 }
 
-func FavoriteMoveToDB() error {
+func FavoriteVideoMoveToDB() error {
 	logger := zap.InitLogger()
 	ctx := context.Background()
 	keys, err := getKeys(ctx, "video::*::user::*::w")
@@ -67,9 +67,9 @@ func FavoriteMoveToDB() error {
 	}
 
 	for _, key := range keys {
-		LockByMutex(ctx, FavoriteMutex)
+		LockByMutex(ctx, FavoriteVideoMutex)
 		res, err := GetRedisHelper().Get(ctx, key).Result()
-		UnlockByMutex(ctx, FavoriteMutex)
+		UnlockByMutex(ctx, FavoriteVideoMutex)
 		if err != nil {
 			logger.Errorln(err)
 			return err
@@ -110,7 +110,7 @@ func FavoriteMoveToDB() error {
 		}
 
 		if v == nil || usr == nil {
-			if err := deleteKeys(ctx, key, FavoriteMutex); err != nil {
+			if err := deleteKeys(ctx, key, FavoriteVideoMutex); err != nil {
 				logger.Errorln(err)
 				return err
 			}
@@ -126,24 +126,118 @@ func FavoriteMoveToDB() error {
 				return err
 			}
 
-			if err := deleteKeys(ctx, key, FavoriteMutex); err != nil {
+			if err := deleteKeys(ctx, key, FavoriteVideoMutex); err != nil {
 				logger.Errorln(err)
 				return err
 			}
-			logger.Infof("key %v, insert favorite success!", key)
+			logger.Infof("key %v, insert favoriteVideo success!", key)
 		} else if relation != nil && actionType == "2" {
-			if err := db.DeleteFavoriteByUserVideoId(ctx, userId, videoId, int64(v.AuthorID)); err != nil {
+			if err := db.DeleteFavoriteVideoByUserVideoId(ctx, userId, videoId, int64(v.AuthorID)); err != nil {
 				logger.Errorln(err)
 				return err
 			}
 
-			if err := deleteKeys(ctx, key, FavoriteMutex); err != nil {
+			if err := deleteKeys(ctx, key, FavoriteVideoMutex); err != nil {
 				logger.Errorln(err)
 				return err
 			}
-			logger.Infof("key %v, delete favorite success!", key)
+			logger.Infof("key %v, delete favoriteVideo success!", key)
 		} else {
-			if err := deleteKeys(ctx, key, FavoriteMutex); err != nil {
+			if err := deleteKeys(ctx, key, FavoriteVideoMutex); err != nil {
+				logger.Errorln(err)
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func FavoriteCommentMoveToDB() error {
+	logger := zap.InitLogger()
+	ctx := context.Background()
+	keys, err := getKeys(ctx, "comment::*::user::*::w")
+	if err != nil {
+		logger.Errorln(err)
+		return err
+	}
+
+	for _, key := range keys {
+		LockByMutex(ctx, FavoriteCommentMutex)
+		res, err := GetRedisHelper().Get(ctx, key).Result()
+		UnlockByMutex(ctx, FavoriteCommentMutex)
+		if err != nil {
+			logger.Errorln(err)
+			return err
+		}
+
+		// 拆分 value
+		vSplit := strings.Split(res, "::")
+		actionType := vSplit[1]
+
+		// 拆分 key
+		kSplit := strings.Split(key, "::")
+		cid, uid := kSplit[1], kSplit[3]
+
+		commentId, err := strconv.ParseInt(cid, 10, 64)
+		if err != nil {
+			logger.Errorln(err)
+			return err
+		}
+
+		userId, err := strconv.ParseInt(uid, 10, 64)
+		if err != nil {
+			logger.Errorln(err)
+			return err
+		}
+		logger.Infof("commentId = %v, userId = %v, action_type = %v", commentId, userId, actionType)
+
+		c, err := db.GetCommentByCommentId(ctx, commentId)
+		if err != nil {
+			logger.Errorln(err)
+			return err
+		}
+
+		usr, err := db.GetUserById(ctx, userId)
+		if err != nil {
+			logger.Errorln(err)
+			return err
+		}
+
+		if c == nil || usr == nil {
+			if err := deleteKeys(ctx, key, FavoriteCommentMutex); err != nil {
+				logger.Errorln(err)
+				return err
+			}
+		}
+
+		relation, err := db.GetFavoriteCommentRelationByUserCommentId(ctx, userId, commentId)
+		if err != nil {
+			logger.Errorln(err)
+			return err
+		} else if relation == nil && actionType == "1" {
+			if err := db.CreateCommentFavorite(ctx, userId, commentId); err != nil {
+				logger.Errorln(err)
+				return err
+			}
+
+			if err := deleteKeys(ctx, key, FavoriteCommentMutex); err != nil {
+				logger.Errorln(err)
+				return err
+			}
+			logger.Infof("key %v, insert favoriteComment success!", key)
+		} else if relation != nil && actionType == "2" {
+			if err := db.DeleteFavoriteCommentByUserCommentId(ctx, userId, commentId); err != nil {
+				logger.Errorln(err)
+				return err
+			}
+
+			if err := deleteKeys(ctx, key, FavoriteCommentMutex); err != nil {
+				logger.Errorln(err)
+				return err
+			}
+			logger.Infof("key %v, delete favoriteComment success!", key)
+		} else {
+			if err := deleteKeys(ctx, key, FavoriteCommentMutex); err != nil {
 				logger.Errorln(err)
 				return err
 			}
@@ -248,9 +342,15 @@ func RelationMoveToDB() error {
 	return nil
 }
 
-func GoCronFavorite() {
+func GoCronFavoriteVideo() {
 	s := gocron.NewSchedule()
-	s.Every(frequency).Tag("favoriteRedis").Do(FavoriteMoveToDB)
+	s.Every(frequency).Tag("favoriteVideoRedis").Do(FavoriteVideoMoveToDB)
+	s.StartAsync()
+}
+
+func GoCronFavoriteComment() {
+	s := gocron.NewSchedule()
+	s.Every(frequency).Tag("favoriteCommentRedis").Do(FavoriteCommentMoveToDB)
 	s.StartAsync()
 }
 

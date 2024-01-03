@@ -18,19 +18,19 @@ import (
 // FavoriteServiceImpl implements the last service interface defined in the IDL.
 type FavoriteServiceImpl struct{}
 
-// FavoriteAction implements the FavoriteServiceImpl interface.
-func (s *FavoriteServiceImpl) FavoriteAction(ctx context.Context, req *favorite.FavoriteActionRequest) (resp *favorite.FavoriteActionResponse, err error) {
+// FavoriteVideoAction implements the FavoriteServiceImpl interface.
+func (s *FavoriteServiceImpl) FavoriteVideoAction(ctx context.Context, req *favorite.FavoriteVideoActionRequest) (resp *favorite.FavoriteVideoActionResponse, err error) {
 	logger := zap.InitLogger()
 	usr, err := db.GetUserById(ctx, req.UserId)
 	if err != nil {
 		logger.Errorln(err)
-		return &favorite.FavoriteActionResponse{
+		return &favorite.FavoriteVideoActionResponse{
 			StatusCode: -1,
 			StatusMsg:  "服务器内部错误",
 		}, nil
 	} else if usr == nil {
 		logger.Errorln("用户不存在")
-		return &favorite.FavoriteActionResponse{
+		return &favorite.FavoriteVideoActionResponse{
 			StatusCode: -1,
 			StatusMsg:  "用户不存在",
 		}, nil
@@ -39,55 +39,55 @@ func (s *FavoriteServiceImpl) FavoriteAction(ctx context.Context, req *favorite.
 	v, err := db.GetVideoByVideoId(ctx, req.VideoId)
 	if err != nil {
 		logger.Errorln(err)
-		return &favorite.FavoriteActionResponse{
+		return &favorite.FavoriteVideoActionResponse{
 			StatusCode: -1,
 			StatusMsg:  "服务器内部错误",
 		}, nil
 	} else if v == nil {
 		logger.Errorln("视频不存在")
-		return &favorite.FavoriteActionResponse{
+		return &favorite.FavoriteVideoActionResponse{
 			StatusCode: -1,
 			StatusMsg:  "视频不存在",
 		}, nil
 	}
 
-	favoriteCache := &redis.FavoriteCache{
+	favoriteVideoCache := &redis.FavoriteVideoCache{
 		VideoId:    uint(req.VideoId),
 		UserId:     uint(req.UserId),
 		ActionType: uint(req.ActionType),
 		CreatedAt:  uint(time.Now().UnixMilli()),
 	}
-	jsonFC, _ := json.Marshal(favoriteCache)
-	if err := FavoriteMQ.PublishSimple(ctx, jsonFC); err != nil {
+	jsonFC, _ := json.Marshal(favoriteVideoCache)
+	if err := FavoriteVideoMQ.PublishSimple(ctx, jsonFC); err != nil {
 		logger.Errorln(err)
 		if strings.Contains(err.Error(), "断开连接") {
-			go FavoriteMQ.Destroy()
-			FavoriteMQ = rabbitmq.NewRabbitMQSimple("favorite", autoAck)
-			go consume()
-			return &favorite.FavoriteActionResponse{
+			go FavoriteVideoMQ.Destroy()
+			FavoriteVideoMQ = rabbitmq.NewRabbitMQSimple("favoriteVideo", videoAutoAck)
+			go consumeVideo()
+			return &favorite.FavoriteVideoActionResponse{
 				StatusCode: -1,
 				StatusMsg:  "服务器内部错误: 请重新尝试",
 			}, nil
 		}
-		return &favorite.FavoriteActionResponse{
+		return &favorite.FavoriteVideoActionResponse{
 			StatusCode: -1,
 			StatusMsg:  "服务器内部错误",
 		}, nil
 	}
 
-	return &favorite.FavoriteActionResponse{
+	return &favorite.FavoriteVideoActionResponse{
 		StatusCode: 0,
 		StatusMsg:  "success!",
 	}, nil
 }
 
-// FavoriteList implements the FavoriteServiceImpl interface.
-func (s *FavoriteServiceImpl) FavoriteList(ctx context.Context, req *favorite.FavoriteListRequest) (resp *favorite.FavoriteListResponse, err error) {
+// FavoriteVideoList implements the FavoriteServiceImpl interface.
+func (s *FavoriteServiceImpl) FavoriteVideoList(ctx context.Context, req *favorite.FavoriteVideoListRequest) (resp *favorite.FavoriteVideoListResponse, err error) {
 	logger := zap.InitLogger()
 	favoriteVideos, err := db.GetFavoriteListByUserId(ctx, req.ToUserId)
 	if err != nil {
 		logger.Errorln(err)
-		return &favorite.FavoriteListResponse{
+		return &favorite.FavoriteVideoListResponse{
 			StatusCode: -1,
 			StatusMsg:  "服务器内部错误",
 		}, nil
@@ -98,13 +98,13 @@ func (s *FavoriteServiceImpl) FavoriteList(ctx context.Context, req *favorite.Fa
 		v, err := db.GetVideoByVideoId(ctx, int64(fv.VideoID))
 		if err != nil {
 			logger.Errorln(err)
-			return &favorite.FavoriteListResponse{
+			return &favorite.FavoriteVideoListResponse{
 				StatusCode: -1,
 				StatusMsg:  "服务器内部错误",
 			}, nil
 		} else if v == nil {
 			logger.Errorln("视频不存在")
-			return &favorite.FavoriteListResponse{
+			return &favorite.FavoriteVideoListResponse{
 				StatusCode: -1,
 				StatusMsg:  "视频不存在",
 			}, nil
@@ -113,13 +113,13 @@ func (s *FavoriteServiceImpl) FavoriteList(ctx context.Context, req *favorite.Fa
 		usr, err := db.GetUserById(ctx, int64(v.AuthorID))
 		if err != nil {
 			logger.Errorln(err)
-			return &favorite.FavoriteListResponse{
+			return &favorite.FavoriteVideoListResponse{
 				StatusCode: -1,
 				StatusMsg:  "服务器内部错误",
 			}, nil
 		} else if usr == nil {
 			logger.Errorln("用户不存在")
-			return &favorite.FavoriteListResponse{
+			return &favorite.FavoriteVideoListResponse{
 				StatusCode: -1,
 				StatusMsg:  "用户不存在",
 			}, nil
@@ -129,7 +129,7 @@ func (s *FavoriteServiceImpl) FavoriteList(ctx context.Context, req *favorite.Fa
 		avatar, err := minio.GetFileTemporaryURL(minio.AvatarBucketName, usr.Avatar)
 		if err != nil {
 			logger.Errorln(err)
-			return &favorite.FavoriteListResponse{
+			return &favorite.FavoriteVideoListResponse{
 				StatusCode: -1,
 				StatusMsg:  "服务器内部错误",
 			}, nil
@@ -138,7 +138,7 @@ func (s *FavoriteServiceImpl) FavoriteList(ctx context.Context, req *favorite.Fa
 		backgroundImage, err := minio.GetFileTemporaryURL(minio.BackgroungImageBucketName, usr.BackgroundImage)
 		if err != nil {
 			logger.Errorln(err)
-			return &favorite.FavoriteListResponse{
+			return &favorite.FavoriteVideoListResponse{
 				StatusCode: -1,
 				StatusMsg:  "服务器内部错误",
 			}, nil
@@ -147,7 +147,7 @@ func (s *FavoriteServiceImpl) FavoriteList(ctx context.Context, req *favorite.Fa
 		playUrl, err := minio.GetFileTemporaryURL(minio.VideoBucketName, v.PlayUrl)
 		if err != nil {
 			logger.Errorln(err)
-			return &favorite.FavoriteListResponse{
+			return &favorite.FavoriteVideoListResponse{
 				StatusCode: -1,
 				StatusMsg:  "服务器内部错误",
 			}, nil
@@ -156,7 +156,7 @@ func (s *FavoriteServiceImpl) FavoriteList(ctx context.Context, req *favorite.Fa
 		coverUrl, err := minio.GetFileTemporaryURL(minio.CoverBucketName, v.CoverUrl)
 		if err != nil {
 			logger.Errorln(err)
-			return &favorite.FavoriteListResponse{
+			return &favorite.FavoriteVideoListResponse{
 				StatusCode: -1,
 				StatusMsg:  "服务器内部错误",
 			}, nil
@@ -188,9 +188,72 @@ func (s *FavoriteServiceImpl) FavoriteList(ctx context.Context, req *favorite.Fa
 		})
 	}
 
-	return &favorite.FavoriteListResponse{
+	return &favorite.FavoriteVideoListResponse{
 		StatusCode: 0,
 		StatusMsg:  "success!",
 		VideoList:  videoList,
+	}, nil
+}
+
+// FavoriteCommentAction implements the FavoriteServiceImpl interface.
+func (s *FavoriteServiceImpl) FavoriteCommentAction(ctx context.Context, req *favorite.FavoriteCommentActionRequest) (resp *favorite.FavoriteCommentActionResponse, err error) {
+	logger := zap.InitLogger()
+	usr, err := db.GetUserById(ctx, req.UserId)
+	if err != nil {
+		logger.Errorln(err)
+		return &favorite.FavoriteCommentActionResponse{
+			StatusCode: -1,
+			StatusMsg:  "服务器内部错误",
+		}, nil
+	} else if usr == nil {
+		logger.Errorln("用户不存在")
+		return &favorite.FavoriteCommentActionResponse{
+			StatusCode: -1,
+			StatusMsg:  "用户不存在",
+		}, nil
+	}
+
+	c, err := db.GetCommentByCommentId(ctx, req.CommentId)
+	if err != nil {
+		logger.Errorln(err)
+		return &favorite.FavoriteCommentActionResponse{
+			StatusCode: -1,
+			StatusMsg:  "服务器内部错误",
+		}, nil
+	} else if c == nil {
+		logger.Errorln("评论不存在")
+		return &favorite.FavoriteCommentActionResponse{
+			StatusCode: -1,
+			StatusMsg:  "评论不存在",
+		}, nil
+	}
+
+	favoriteCommentCache := &redis.FavoriteCommentCache{
+		CommentId:  uint(req.CommentId),
+		UserId:     uint(req.UserId),
+		ActionType: uint(req.ActionType),
+		CreatedAt:  uint(time.Now().UnixMilli()),
+	}
+	jsonFC, _ := json.Marshal(favoriteCommentCache)
+	if err := FavoriteCommentMQ.PublishSimple(ctx, jsonFC); err != nil {
+		logger.Errorln(err)
+		if strings.Contains(err.Error(), "断开连接") {
+			go FavoriteCommentMQ.Destroy()
+			FavoriteCommentMQ = rabbitmq.NewRabbitMQSimple("favoriteComment", commentAutoAck)
+			go consumeComment()
+			return &favorite.FavoriteCommentActionResponse{
+				StatusCode: -1,
+				StatusMsg:  "服务器内部错误: 请重新尝试",
+			}, nil
+		}
+		return &favorite.FavoriteCommentActionResponse{
+			StatusCode: -1,
+			StatusMsg:  "服务器内部错误",
+		}, nil
+	}
+
+	return &favorite.FavoriteCommentActionResponse{
+		StatusCode: 0,
+		StatusMsg:  "success!",
 	}, nil
 }

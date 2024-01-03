@@ -35,6 +35,16 @@ func (x *Comment) FastRead(buf []byte, _type int8, number int32) (offset int, er
 		if err != nil {
 			goto ReadFieldError
 		}
+	case 5:
+		offset, err = x.fastReadField5(buf, _type)
+		if err != nil {
+			goto ReadFieldError
+		}
+	case 6:
+		offset, err = x.fastReadField6(buf, _type)
+		if err != nil {
+			goto ReadFieldError
+		}
 	default:
 		offset, err = fastpb.Skip(buf, _type, number)
 		if err != nil {
@@ -69,7 +79,17 @@ func (x *Comment) fastReadField3(buf []byte, _type int8) (offset int, err error)
 }
 
 func (x *Comment) fastReadField4(buf []byte, _type int8) (offset int, err error) {
-	x.CreateDate, offset, err = fastpb.ReadString(buf, _type)
+	x.CreateTime, offset, err = fastpb.ReadInt64(buf, _type)
+	return offset, err
+}
+
+func (x *Comment) fastReadField5(buf []byte, _type int8) (offset int, err error) {
+	x.IsFavorite, offset, err = fastpb.ReadBool(buf, _type)
+	return offset, err
+}
+
+func (x *Comment) fastReadField6(buf []byte, _type int8) (offset int, err error) {
+	x.FavoriteCount, offset, err = fastpb.ReadInt64(buf, _type)
 	return offset, err
 }
 
@@ -150,11 +170,6 @@ func (x *CommentActionResponse) FastRead(buf []byte, _type int8, number int32) (
 		if err != nil {
 			goto ReadFieldError
 		}
-	case 3:
-		offset, err = x.fastReadField3(buf, _type)
-		if err != nil {
-			goto ReadFieldError
-		}
 	default:
 		offset, err = fastpb.Skip(buf, _type, number)
 		if err != nil {
@@ -176,16 +191,6 @@ func (x *CommentActionResponse) fastReadField1(buf []byte, _type int8) (offset i
 func (x *CommentActionResponse) fastReadField2(buf []byte, _type int8) (offset int, err error) {
 	x.StatusMsg, offset, err = fastpb.ReadString(buf, _type)
 	return offset, err
-}
-
-func (x *CommentActionResponse) fastReadField3(buf []byte, _type int8) (offset int, err error) {
-	var v Comment
-	offset, err = fastpb.ReadMessage(buf, _type, &v)
-	if err != nil {
-		return offset, err
-	}
-	x.Comment = &v
-	return offset, nil
 }
 
 func (x *CommentListRequest) FastRead(buf []byte, _type int8, number int32) (offset int, err error) {
@@ -281,6 +286,8 @@ func (x *Comment) FastWrite(buf []byte) (offset int) {
 	offset += x.fastWriteField2(buf[offset:])
 	offset += x.fastWriteField3(buf[offset:])
 	offset += x.fastWriteField4(buf[offset:])
+	offset += x.fastWriteField5(buf[offset:])
+	offset += x.fastWriteField6(buf[offset:])
 	return offset
 }
 
@@ -309,10 +316,26 @@ func (x *Comment) fastWriteField3(buf []byte) (offset int) {
 }
 
 func (x *Comment) fastWriteField4(buf []byte) (offset int) {
-	if x.CreateDate == "" {
+	if x.CreateTime == 0 {
 		return offset
 	}
-	offset += fastpb.WriteString(buf[offset:], 4, x.GetCreateDate())
+	offset += fastpb.WriteInt64(buf[offset:], 4, x.GetCreateTime())
+	return offset
+}
+
+func (x *Comment) fastWriteField5(buf []byte) (offset int) {
+	if !x.IsFavorite {
+		return offset
+	}
+	offset += fastpb.WriteBool(buf[offset:], 5, x.GetIsFavorite())
+	return offset
+}
+
+func (x *Comment) fastWriteField6(buf []byte) (offset int) {
+	if x.FavoriteCount == 0 {
+		return offset
+	}
+	offset += fastpb.WriteInt64(buf[offset:], 6, x.GetFavoriteCount())
 	return offset
 }
 
@@ -374,7 +397,6 @@ func (x *CommentActionResponse) FastWrite(buf []byte) (offset int) {
 	}
 	offset += x.fastWriteField1(buf[offset:])
 	offset += x.fastWriteField2(buf[offset:])
-	offset += x.fastWriteField3(buf[offset:])
 	return offset
 }
 
@@ -391,14 +413,6 @@ func (x *CommentActionResponse) fastWriteField2(buf []byte) (offset int) {
 		return offset
 	}
 	offset += fastpb.WriteString(buf[offset:], 2, x.GetStatusMsg())
-	return offset
-}
-
-func (x *CommentActionResponse) fastWriteField3(buf []byte) (offset int) {
-	if x.Comment == nil {
-		return offset
-	}
-	offset += fastpb.WriteMessage(buf[offset:], 3, x.GetComment())
 	return offset
 }
 
@@ -471,6 +485,8 @@ func (x *Comment) Size() (n int) {
 	n += x.sizeField2()
 	n += x.sizeField3()
 	n += x.sizeField4()
+	n += x.sizeField5()
+	n += x.sizeField6()
 	return n
 }
 
@@ -499,10 +515,26 @@ func (x *Comment) sizeField3() (n int) {
 }
 
 func (x *Comment) sizeField4() (n int) {
-	if x.CreateDate == "" {
+	if x.CreateTime == 0 {
 		return n
 	}
-	n += fastpb.SizeString(4, x.GetCreateDate())
+	n += fastpb.SizeInt64(4, x.GetCreateTime())
+	return n
+}
+
+func (x *Comment) sizeField5() (n int) {
+	if !x.IsFavorite {
+		return n
+	}
+	n += fastpb.SizeBool(5, x.GetIsFavorite())
+	return n
+}
+
+func (x *Comment) sizeField6() (n int) {
+	if x.FavoriteCount == 0 {
+		return n
+	}
+	n += fastpb.SizeInt64(6, x.GetFavoriteCount())
 	return n
 }
 
@@ -564,7 +596,6 @@ func (x *CommentActionResponse) Size() (n int) {
 	}
 	n += x.sizeField1()
 	n += x.sizeField2()
-	n += x.sizeField3()
 	return n
 }
 
@@ -581,14 +612,6 @@ func (x *CommentActionResponse) sizeField2() (n int) {
 		return n
 	}
 	n += fastpb.SizeString(2, x.GetStatusMsg())
-	return n
-}
-
-func (x *CommentActionResponse) sizeField3() (n int) {
-	if x.Comment == nil {
-		return n
-	}
-	n += fastpb.SizeMessage(3, x.GetComment())
 	return n
 }
 
@@ -657,7 +680,9 @@ var fieldIDToName_Comment = map[int32]string{
 	1: "Id",
 	2: "User",
 	3: "Content",
-	4: "CreateDate",
+	4: "CreateTime",
+	5: "IsFavorite",
+	6: "FavoriteCount",
 }
 
 var fieldIDToName_CommentActionRequest = map[int32]string{
@@ -671,7 +696,6 @@ var fieldIDToName_CommentActionRequest = map[int32]string{
 var fieldIDToName_CommentActionResponse = map[int32]string{
 	1: "StatusCode",
 	2: "StatusMsg",
-	3: "Comment",
 }
 
 var fieldIDToName_CommentListRequest = map[int32]string{

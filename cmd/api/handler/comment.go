@@ -83,7 +83,6 @@ func CommentAction(c *gin.Context) {
 			StatusCode: 0,
 			StatusMsg:  "success!",
 		},
-		Comment: res.Comment,
 	})
 }
 

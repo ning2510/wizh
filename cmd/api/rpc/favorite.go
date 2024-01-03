@@ -44,10 +44,14 @@ func InitFavorite(config *viper.Config) {
 	}
 }
 
-func FavoriteAction(ctx context.Context, req *favorite.FavoriteActionRequest) (*favorite.FavoriteActionResponse, error) {
-	return favoriteClient.FavoriteAction(ctx, req)
+func FavoriteVideoAction(ctx context.Context, req *favorite.FavoriteVideoActionRequest) (*favorite.FavoriteVideoActionResponse, error) {
+	return favoriteClient.FavoriteVideoAction(ctx, req)
 }
 
-func FavoriteList(ctx context.Context, req *favorite.FavoriteListRequest) (*favorite.FavoriteListResponse, error) {
-	return favoriteClient.FavoriteList(ctx, req)
+func FavoriteVideoList(ctx context.Context, req *favorite.FavoriteVideoListRequest) (*favorite.FavoriteVideoListResponse, error) {
+	return favoriteClient.FavoriteVideoList(ctx, req)
+}
+
+func FavoriteCommentAction(ctx context.Context, req *favorite.FavoriteCommentActionRequest) (*favorite.FavoriteCommentActionResponse, error) {
+	return favoriteClient.FavoriteCommentAction(ctx, req)
 }
