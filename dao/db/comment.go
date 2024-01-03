@@ -52,12 +52,17 @@ func CreateComment(ctx context.Context, comment *Comment) error {
 // 根据 commentId 和 videoId 删除评论
 func DeleteCommentById(ctx context.Context, commentId int64, videoId int64) error {
 	err := DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		// 1. comments 表删除评论
+		// 1. user_favorite_comments 表删除对应评论
+		if err := tx.Unscoped().Where("comment_id = ?", commentId).Delete(&FavoriteCommentRelation{}).Error; err != nil {
+			return err
+		}
+
+		// 2. comments 表删除评论
 		if err := tx.Unscoped().Where("id = ?", commentId).Delete(&Comment{}).Error; err != nil {
 			return err
 		}
 
-		// 2. videos 表评论数 -1
+		// 3. videos 表评论数 -1
 		res := tx.Model(&Video{}).Where("id = ?", videoId).Update("comment_count", gorm.Expr("CASE WHEN comment_count >= 1 THEN comment_count - 1 ELSE 0 END"))
 		if res.Error != nil {
 			return res.Error
