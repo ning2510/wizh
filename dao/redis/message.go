@@ -11,7 +11,7 @@ import (
 
 func SetMessageTimestamp(ctx context.Context, userId int64, toUserId int64, timestamp int) error {
 	key := fmt.Sprintf("%d_%d", userId, toUserId)
-	return GetRedisHelper().Set(ctx, key, timestamp, 2*time.Second).Err()
+	return GetRedisHelper().Set(ctx, key, timestamp, 1*time.Second).Err()
 }
 
 func GetMessageTimestamp(ctx context.Context, userId int64, toUserId int64) (int, error) {

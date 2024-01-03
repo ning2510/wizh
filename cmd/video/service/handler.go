@@ -257,6 +257,7 @@ func (s *VideoServiceImpl) PublishList(ctx context.Context, req *video.PublishLi
 	}, nil
 }
 
+// PublishInfo implements the VideoServiceImpl interface.
 func (s *VideoServiceImpl) PublishInfo(ctx context.Context, req *video.PublishInfoRequest) (resp *video.PublishInfoResponse, err error) {
 	logger := zap.InitLogger()
 	v, err := db.GetVideoByVideoId(ctx, req.VideoId)
@@ -343,5 +344,56 @@ func (s *VideoServiceImpl) PublishInfo(ctx context.Context, req *video.PublishIn
 		StatusCode: 0,
 		StatusMsg:  "success!",
 		Video:      videoInfo,
+	}, nil
+}
+
+// PublishDelete implements the VideoServiceImpl interface.
+func (s *VideoServiceImpl) PublishDelete(ctx context.Context, req *video.PublishDeleteRequest) (resp *video.PublishDeleteResponse, err error) {
+	logger := zap.InitLogger()
+	v, _ := db.GetVideoByVideoId(ctx, req.VideoId)
+	if v == nil {
+		logger.Errorln(err)
+		return &video.PublishDeleteResponse{
+			StatusCode: -1,
+			StatusMsg:  "要删除的视频不存在",
+		}, nil
+	}
+
+	if v.AuthorID != uint(req.UserId) {
+		logger.Errorln("操作非法，不能删除他人视频")
+		return &video.PublishDeleteResponse{
+			StatusCode: -1,
+			StatusMsg:  "操作非法，不能删除他人视频",
+		}, nil
+	}
+
+	if err := db.DeleteVideo(context.Background(), v); err != nil {
+		logger.Errorln("服务器内部错误: 视频删除失败")
+		return &video.PublishDeleteResponse{
+			StatusCode: -1,
+			StatusMsg:  "服务器内部错误: 视频删除失败",
+		}, nil
+	}
+
+	// 删除 minio 中数据
+	if err := minio.RemoveObject(ctx, minio.VideoBucketName, v.PlayUrl); err != nil {
+		logger.Errorln(err)
+		return &video.PublishDeleteResponse{
+			StatusCode: -1,
+			StatusMsg:  "服务器内部错误: 视频删除失败",
+		}, nil
+	}
+
+	if err := minio.RemoveObject(ctx, minio.CoverBucketName, v.CoverUrl); err != nil {
+		logger.Errorln(err)
+		return &video.PublishDeleteResponse{
+			StatusCode: -1,
+			StatusMsg:  "服务器内部错误: 视频删除失败",
+		}, nil
+	}
+
+	return &video.PublishDeleteResponse{
+		StatusCode: 0,
+		StatusMsg:  "success!",
 	}, nil
 }

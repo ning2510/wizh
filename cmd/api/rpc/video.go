@@ -59,3 +59,7 @@ func PublishList(ctx context.Context, req *video.PublishListRequest) (*video.Pub
 func PublishInfo(ctx context.Context, req *video.PublishInfoRequest) (*video.PublishInfoResponse, error) {
 	return videoClient.PublishInfo(ctx, req)
 }
+
+func PublishDelete(ctx context.Context, req *video.PublishDeleteRequest) (*video.PublishDeleteResponse, error) {
+	return videoClient.PublishDelete(ctx, req)
+}

@@ -29,6 +29,12 @@ func RemoveBucket(ctx context.Context, bucketName string) error {
 	return minioClient.RemoveBucket(ctx, bucketName)
 }
 
+func RemoveObject(ctx context.Context, bucketName string, objectName string) error {
+	return minioClient.RemoveObject(ctx, bucketName, objectName, minio.RemoveObjectOptions{
+		ForceDelete: true,
+	})
+}
+
 func UploadFileByPath(bucketName, objectName, path, contentType string) (int64, error) {
 	if len(bucketName) <= 0 || len(objectName) <= 0 {
 		return -1, errors.New("invalid argument")

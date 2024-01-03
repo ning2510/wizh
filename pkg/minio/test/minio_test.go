@@ -118,3 +118,10 @@ func TestRemoveBucket(t *testing.T) {
 	}
 	fmt.Println("RemoveBucket success!")
 }
+
+func TestRemoveObject(t *testing.T) {
+	if err := minio.RemoveObject(context.Background(), "test-minio", "minio-test.txt"); err != nil {
+		fmt.Printf("RemoveObject error! %v\n", err)
+	}
+	fmt.Println("RemoveObject success!")
+}

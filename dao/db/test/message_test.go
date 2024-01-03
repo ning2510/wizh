@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 	"wizh/dao/db"
+	"wizh/internal/tool"
 )
 
 func TestGetMessagesByUserIds(t *testing.T) {
@@ -37,14 +38,15 @@ func TestGetMessagesByUserToUser(t *testing.T) {
 func TestCreateMessages(t *testing.T) {
 	messageList := make([]*db.Message, 0)
 	for i := 0; i < 3; i++ {
-		fromUserId, toUserId := 3, 6
+		fromUserId, toUserId := 3, 2
 		if i%2 == 1 {
-			fromUserId, toUserId = 6, 3
+			fromUserId, toUserId = 2, 3
 		}
 		messageList = append(messageList, &db.Message{
+			CreatedAt:  time.Now(),
 			FromUserID: uint(fromUserId),
 			ToUserID:   uint(toUserId),
-			Content:    fmt.Sprintf("test message%d", i),
+			Content:    string(tool.Base64Encode([]byte(fmt.Sprintf("test message%d", i)))),
 		})
 	}
 

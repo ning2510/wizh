@@ -57,22 +57,35 @@ message PublishListResponse {
 }
 // ========================= 发布列表 =========================
 
-// ========================= 发布列表 =========================
+// ========================= 视频信息 =========================
 message PublishInfoRequest {
     int64 user_id = 1;      // 用户 id，登录状态下设置
-    int64 video_id = 2;
+    int64 video_id = 2;     // 目标视频 id
 }
 
 message PublishInfoResponse {
-    int32 status_code = 1;
-    string status_msg = 2;
-    Video video = 3;
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+    Video video = 3;        // 视频信息
 }
-// ========================= 发布列表 =========================
+// ========================= 视频信息 =========================
+
+// ========================= 删除视频 =========================
+message PublishDeleteRequest {
+    int64 user_id = 1;      // 用户 id，登录状态下设置
+    int64 video_id = 2;     // 目标视频 id
+}
+
+message PublishDeleteResponse {
+    int32 status_code = 1;  // 状态码，0-成功，其他值-失败
+    string status_msg = 2;  // 返回状态描述
+}
+// ========================= 删除视频 =========================
 
 service VideoService {
     rpc Feed (FeedRequest) returns (FeedResponse);
     rpc PublishAction (PublishActionRequest) returns (PublishActionResponse);
     rpc PublishList (PublishListRequest) returns (PublishListResponse);
     rpc PublishInfo (PublishInfoRequest) returns (PublishInfoResponse);
+    rpc PublishDelete (PublishDeleteRequest) returns (PublishDeleteResponse);
 }

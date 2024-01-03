@@ -15,6 +15,7 @@ type Client interface {
 	PublishAction(ctx context.Context, Req *video.PublishActionRequest, callOptions ...callopt.Option) (r *video.PublishActionResponse, err error)
 	PublishList(ctx context.Context, Req *video.PublishListRequest, callOptions ...callopt.Option) (r *video.PublishListResponse, err error)
 	PublishInfo(ctx context.Context, Req *video.PublishInfoRequest, callOptions ...callopt.Option) (r *video.PublishInfoResponse, err error)
+	PublishDelete(ctx context.Context, Req *video.PublishDeleteRequest, callOptions ...callopt.Option) (r *video.PublishDeleteResponse, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -64,4 +65,9 @@ func (p *kVideoServiceClient) PublishList(ctx context.Context, Req *video.Publis
 func (p *kVideoServiceClient) PublishInfo(ctx context.Context, Req *video.PublishInfoRequest, callOptions ...callopt.Option) (r *video.PublishInfoResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.PublishInfo(ctx, Req)
+}
+
+func (p *kVideoServiceClient) PublishDelete(ctx context.Context, Req *video.PublishDeleteRequest, callOptions ...callopt.Option) (r *video.PublishDeleteResponse, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.PublishDelete(ctx, Req)
 }

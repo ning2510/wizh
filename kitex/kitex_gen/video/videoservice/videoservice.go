@@ -25,6 +25,7 @@ func NewServiceInfo() *kitex.ServiceInfo {
 		"PublishAction": kitex.NewMethodInfo(publishActionHandler, newPublishActionArgs, newPublishActionResult, false),
 		"PublishList":   kitex.NewMethodInfo(publishListHandler, newPublishListArgs, newPublishListResult, false),
 		"PublishInfo":   kitex.NewMethodInfo(publishInfoHandler, newPublishInfoArgs, newPublishInfoResult, false),
+		"PublishDelete": kitex.NewMethodInfo(publishDeleteHandler, newPublishDeleteArgs, newPublishDeleteResult, false),
 	}
 	extra := map[string]interface{}{
 		"PackageName":     "video",
@@ -653,6 +654,159 @@ func (p *PublishInfoResult) GetResult() interface{} {
 	return p.Success
 }
 
+func publishDeleteHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	switch s := arg.(type) {
+	case *streaming.Args:
+		st := s.Stream
+		req := new(video.PublishDeleteRequest)
+		if err := st.RecvMsg(req); err != nil {
+			return err
+		}
+		resp, err := handler.(video.VideoService).PublishDelete(ctx, req)
+		if err != nil {
+			return err
+		}
+		if err := st.SendMsg(resp); err != nil {
+			return err
+		}
+	case *PublishDeleteArgs:
+		success, err := handler.(video.VideoService).PublishDelete(ctx, s.Req)
+		if err != nil {
+			return err
+		}
+		realResult := result.(*PublishDeleteResult)
+		realResult.Success = success
+	}
+	return nil
+}
+func newPublishDeleteArgs() interface{} {
+	return &PublishDeleteArgs{}
+}
+
+func newPublishDeleteResult() interface{} {
+	return &PublishDeleteResult{}
+}
+
+type PublishDeleteArgs struct {
+	Req *video.PublishDeleteRequest
+}
+
+func (p *PublishDeleteArgs) FastRead(buf []byte, _type int8, number int32) (n int, err error) {
+	if !p.IsSetReq() {
+		p.Req = new(video.PublishDeleteRequest)
+	}
+	return p.Req.FastRead(buf, _type, number)
+}
+
+func (p *PublishDeleteArgs) FastWrite(buf []byte) (n int) {
+	if !p.IsSetReq() {
+		return 0
+	}
+	return p.Req.FastWrite(buf)
+}
+
+func (p *PublishDeleteArgs) Size() (n int) {
+	if !p.IsSetReq() {
+		return 0
+	}
+	return p.Req.Size()
+}
+
+func (p *PublishDeleteArgs) Marshal(out []byte) ([]byte, error) {
+	if !p.IsSetReq() {
+		return out, nil
+	}
+	return proto.Marshal(p.Req)
+}
+
+func (p *PublishDeleteArgs) Unmarshal(in []byte) error {
+	msg := new(video.PublishDeleteRequest)
+	if err := proto.Unmarshal(in, msg); err != nil {
+		return err
+	}
+	p.Req = msg
+	return nil
+}
+
+var PublishDeleteArgs_Req_DEFAULT *video.PublishDeleteRequest
+
+func (p *PublishDeleteArgs) GetReq() *video.PublishDeleteRequest {
+	if !p.IsSetReq() {
+		return PublishDeleteArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+func (p *PublishDeleteArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *PublishDeleteArgs) GetFirstArgument() interface{} {
+	return p.Req
+}
+
+type PublishDeleteResult struct {
+	Success *video.PublishDeleteResponse
+}
+
+var PublishDeleteResult_Success_DEFAULT *video.PublishDeleteResponse
+
+func (p *PublishDeleteResult) FastRead(buf []byte, _type int8, number int32) (n int, err error) {
+	if !p.IsSetSuccess() {
+		p.Success = new(video.PublishDeleteResponse)
+	}
+	return p.Success.FastRead(buf, _type, number)
+}
+
+func (p *PublishDeleteResult) FastWrite(buf []byte) (n int) {
+	if !p.IsSetSuccess() {
+		return 0
+	}
+	return p.Success.FastWrite(buf)
+}
+
+func (p *PublishDeleteResult) Size() (n int) {
+	if !p.IsSetSuccess() {
+		return 0
+	}
+	return p.Success.Size()
+}
+
+func (p *PublishDeleteResult) Marshal(out []byte) ([]byte, error) {
+	if !p.IsSetSuccess() {
+		return out, nil
+	}
+	return proto.Marshal(p.Success)
+}
+
+func (p *PublishDeleteResult) Unmarshal(in []byte) error {
+	msg := new(video.PublishDeleteResponse)
+	if err := proto.Unmarshal(in, msg); err != nil {
+		return err
+	}
+	p.Success = msg
+	return nil
+}
+
+func (p *PublishDeleteResult) GetSuccess() *video.PublishDeleteResponse {
+	if !p.IsSetSuccess() {
+		return PublishDeleteResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+func (p *PublishDeleteResult) SetSuccess(x interface{}) {
+	p.Success = x.(*video.PublishDeleteResponse)
+}
+
+func (p *PublishDeleteResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *PublishDeleteResult) GetResult() interface{} {
+	return p.Success
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -698,6 +852,16 @@ func (p *kClient) PublishInfo(ctx context.Context, Req *video.PublishInfoRequest
 	_args.Req = Req
 	var _result PublishInfoResult
 	if err = p.c.Call(ctx, "PublishInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) PublishDelete(ctx context.Context, Req *video.PublishDeleteRequest) (r *video.PublishDeleteResponse, err error) {
+	var _args PublishDeleteArgs
+	_args.Req = Req
+	var _result PublishDeleteResult
+	if err = p.c.Call(ctx, "PublishDelete", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

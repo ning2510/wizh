@@ -180,3 +180,39 @@ func PublishInfo(c *gin.Context) {
 		Video: res.Video,
 	})
 }
+
+func PublishDelete(c *gin.Context) {
+	userId, _ := strconv.ParseInt(c.GetString("userId"), 10, 64)
+	videoId, err := strconv.ParseInt(c.Query("video_id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.PublishDelete{
+			Base: response.Base{
+				StatusCode: -1,
+				StatusMsg:  "video_id 不合法",
+			},
+		})
+		return
+	}
+
+	req := &video.PublishDeleteRequest{
+		UserId:  userId,
+		VideoId: videoId,
+	}
+	res, _ := rpc.PublishDelete(context.Background(), req)
+	if res.StatusCode == -1 {
+		c.JSON(http.StatusOK, response.PublishDelete{
+			Base: response.Base{
+				StatusCode: -1,
+				StatusMsg:  res.StatusMsg,
+			},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.PublishDelete{
+		Base: response.Base{
+			StatusCode: 0,
+			StatusMsg:  "success!",
+		},
+	})
+}

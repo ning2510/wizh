@@ -64,7 +64,7 @@ func (s *MessageServiceImpl) MessageChat(ctx context.Context, req *message.Messa
 		logger.Errorln(err)
 		return &message.MessageChatResponse{
 			StatusCode: -1,
-			StatusMsg:  "服务器内部错误: 获取聊天记录失败",
+			StatusMsg:  "服务器内部错误: 获取聊天记录失败1",
 		}, nil
 	}
 
@@ -73,7 +73,7 @@ func (s *MessageServiceImpl) MessageChat(ctx context.Context, req *message.Messa
 		logger.Errorln(err)
 		return &message.MessageChatResponse{
 			StatusCode: -1,
-			StatusMsg:  "服务器内部错误: 获取聊天记录失败",
+			StatusMsg:  "服务器内部错误: 获取聊天记录失败2",
 		}, nil
 	}
 	if latestTime == -1 {
@@ -87,7 +87,7 @@ func (s *MessageServiceImpl) MessageChat(ctx context.Context, req *message.Messa
 			logger.Errorln(err)
 			return &message.MessageChatResponse{
 				StatusCode: -1,
-				StatusMsg:  "服务器内部错误: 获取聊天记录失败",
+				StatusMsg:  "服务器内部错误: 获取聊天记录失败3",
 			}, nil
 		}
 

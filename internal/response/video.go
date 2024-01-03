@@ -21,3 +21,7 @@ type PublishInfo struct {
 	Base
 	Video *video.Video `json:"video"`
 }
+
+type PublishDelete struct {
+	Base
+}

@@ -26,7 +26,7 @@ func (Message) TableName() string {
 // 根据两个用户的 id 获取聊天记录
 func GetMessagesByUserIds(ctx context.Context, userId int64, toUserId int64, latestTime int64) ([]*Message, error) {
 	messageList := make([]*Message, 0)
-	if err := DB.WithContext(ctx).Where("(from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?) AND created_at > ?",
+	if err := DB.WithContext(ctx).Where("((from_user_id = ? AND to_user_id = ?) OR (from_user_id = ? AND to_user_id = ?)) AND created_at > ?",
 		userId, toUserId, toUserId, userId, time.UnixMilli(latestTime).Format("2006-01-02 15:04:05.000")).
 		Order("created_at ASC").Find(&messageList).Error; err != nil {
 		return nil, err

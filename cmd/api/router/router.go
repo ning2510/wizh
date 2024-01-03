@@ -27,6 +27,7 @@ func InitRouter(r *gin.Engine) {
 			publish.POST("/action", auth.AuthWithBody(), handler.PublishAction)
 			publish.GET("/list", auth.AuthWithoutLogin(), handler.PublishList)
 			publish.GET("/info", auth.Auth(), handler.PublishInfo)
+			publish.GET("/delete", auth.Auth(), handler.PublishDelete)
 		}
 
 		favorite := router.Group("/favorite")

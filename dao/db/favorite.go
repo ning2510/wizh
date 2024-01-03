@@ -165,3 +165,15 @@ func GetFavoriteCommentRelationByUserCommentId(ctx context.Context, userId int64
 		return nil, err
 	}
 }
+
+// 获取 videoId 对应的点赞用户 id 列表
+func GetFavoriteUserIdsByVideoId(ctx context.Context, videoId int64) ([]*int64, error) {
+	userIds := make([]*int64, 0)
+	if err := DB.WithContext(ctx).Where("video_id = ?", videoId).Find(&userIds).Error; err == nil {
+		return userIds, nil
+	} else if err == gorm.ErrRecordNotFound {
+		return nil, nil
+	} else {
+		return nil, nil
+	}
+}
