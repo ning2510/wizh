@@ -74,13 +74,13 @@ func (s *RelationServiceImpl) RelationAction(ctx context.Context, req *relation.
 // RelationFollowList implements the RelationServiceImpl interface.
 func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relation.RelationFollowListRequest) (resp *relation.RelationFollowListResponse, err error) {
 	logger := zap.InitLogger()
-	if req.UserId != req.ToUserId {
-		logger.Errorln("非法操作，用户无法访问其他用户的关注列表")
-		return &relation.RelationFollowListResponse{
-			StatusCode: -1,
-			StatusMsg:  "非法操作，用户无法访问其他用户的关注列表",
-		}, nil
-	}
+	// if req.UserId != req.ToUserId {
+	// 	logger.Errorln("非法操作，用户无法访问其他用户的关注列表")
+	// 	return &relation.RelationFollowListResponse{
+	// 		StatusCode: -1,
+	// 		StatusMsg:  "非法操作，用户无法访问其他用户的关注列表",
+	// 	}, nil
+	// }
 
 	follows, err := db.GetFollowingListByUserId(ctx, req.ToUserId)
 	if err != nil {
@@ -145,16 +145,17 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 // RelationFollowerList implements the RelationServiceImpl interface.
 func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *relation.RelationFollowerListRequest) (resp *relation.RelationFollowerListResponse, err error) {
 	logger := zap.InitLogger()
-	if req.UserId != req.ToUserId {
-		logger.Errorln("非法操作，用户无法访问其他用户的粉丝列表")
-		return &relation.RelationFollowerListResponse{
-			StatusCode: -1,
-			StatusMsg:  "非法操作，用户无法访问其他用户的粉丝列表",
-		}, nil
-	}
+	// if req.UserId != req.ToUserId {
+	// 	logger.Errorln("非法操作，用户无法访问其他用户的粉丝列表")
+	// 	return &relation.RelationFollowerListResponse{
+	// 		StatusCode: -1,
+	// 		StatusMsg:  "非法操作，用户无法访问其他用户的粉丝列表",
+	// 	}, nil
+	// }
 
 	followers, err := db.GetFollowerListByUserId(ctx, req.ToUserId)
 	if err != nil {
+		logger.Errorln(err)
 		return &relation.RelationFollowerListResponse{
 			StatusCode: -1,
 			StatusMsg:  "服务器内部错误: 获取粉丝列表失败",
@@ -165,6 +166,7 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 	for _, f := range followers {
 		usr, err := db.GetUserById(ctx, int64(f.UserID))
 		if err != nil {
+			logger.Errorln(err)
 			return &relation.RelationFollowerListResponse{
 				StatusCode: -1,
 				StatusMsg:  "服务器内部错误: 获取粉丝列表失败",
@@ -173,6 +175,7 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 
 		avatar, err := minio.GetFileTemporaryURL(minio.AvatarBucketName, usr.Avatar)
 		if err != nil {
+			logger.Errorln(err)
 			return &relation.RelationFollowerListResponse{
 				StatusCode: -1,
 				StatusMsg:  "服务器内部错误: 获取粉丝列表失败",
@@ -181,6 +184,7 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 
 		backgroundImage, err := minio.GetFileTemporaryURL(minio.BackgroungImageBucketName, usr.BackgroundImage)
 		if err != nil {
+			logger.Errorln(err)
 			return &relation.RelationFollowerListResponse{
 				StatusCode: -1,
 				StatusMsg:  "服务器内部错误: 获取粉丝列表失败",
